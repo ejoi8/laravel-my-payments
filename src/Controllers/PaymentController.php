@@ -3,19 +3,40 @@
 namespace Ejoi8\PaymentGateway\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Illuminate\Routing\Controller;
 use Ejoi8\PaymentGateway\Services\PaymentService;
+use Ejoi8\PaymentGateway\Models\Payment;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
+/**
+ * Payment Gateway Controller
+ * 
+ * Handles all payment gateway related HTTP requests
+ */
 class PaymentController extends Controller
 {
+    /**
+     * @var PaymentService
+     */
     protected $paymentService;
 
+    /**
+     * Constructor
+     * 
+     * @param PaymentService $paymentService
+     */
     public function __construct(PaymentService $paymentService)
     {
         $this->paymentService = $paymentService;
-    }
-
-    public function create(Request $request)
+    }    /**
+     * Create a new payment
+     * 
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function create(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'gateway' => 'required|string',
@@ -43,6 +64,13 @@ class PaymentController extends Controller
         return back()->withErrors(['payment' => $result['message']]);
     }
 
+    /**
+     * Handle payment callback/webhook from payment provider
+     * 
+     * @param Request $request
+     * @param string $gateway
+     * @return RedirectResponse|JsonResponse
+     */
     public function callback(Request $request, string $gateway)
     {
         $data = $request->all();
@@ -64,35 +92,56 @@ class PaymentController extends Controller
         return response()->json(['error' => $result['message']], 400);
     }
 
-    public function success(Request $request)
+    /**
+     * Display payment success page
+     * 
+     * @param Request $request
+     * @return View
+     */
+    public function success(Request $request): View
     {
-        $paymentId = $request->get('payment_id');
-        $payment = null;
-        
-        if ($paymentId) {
-            $payment = $this->paymentService->getPayment($paymentId);
-        } elseif (session('payment')) {
-            $payment = session('payment');
-        }
-
+        $payment = $this->getPaymentFromRequestOrSession($request);
         return view('payment-gateway::pages.thank-you', compact('payment'));
     }
 
-    public function failed(Request $request)
+    /**
+     * Display payment failed page
+     * 
+     * @param Request $request
+     * @return View
+     */
+    public function failed(Request $request): View
     {
-        $paymentId = $request->get('payment_id');
-        $payment = null;
-        
-        if ($paymentId) {
-            $payment = $this->paymentService->getPayment($paymentId);
-        } elseif (session('payment')) {
-            $payment = session('payment');
-        }
-
+        $payment = $this->getPaymentFromRequestOrSession($request);
         return view('payment-gateway::pages.payment-failed', compact('payment'));
     }
-
-    public function show(string $paymentId)
+    
+    /**
+     * Get payment from request parameter or session
+     * 
+     * @param Request $request
+     * @return Payment|null
+     */
+    protected function getPaymentFromRequestOrSession(Request $request): ?Payment
+    {
+        $paymentId = $request->get('payment_id');
+        
+        if ($paymentId) {
+            return $this->paymentService->getPayment($paymentId);
+        } 
+        
+        if (session('payment')) {
+            return session('payment');
+        }
+        
+        return null;
+    }    /**
+     * Show payment details
+     * 
+     * @param string $paymentId
+     * @return View
+     */
+    public function show(string $paymentId): View
     {
         $payment = $this->paymentService->getPayment($paymentId);
         
@@ -103,6 +152,13 @@ class PaymentController extends Controller
         return view('payment-gateway::pages.payment', compact('payment'));
     }
 
+    /**
+     * Handle manual payment proof upload
+     * 
+     * @param Request $request
+     * @param string $paymentId
+     * @return View|RedirectResponse
+     */
     public function manualUpload(Request $request, string $paymentId)
     {
         $payment = $this->paymentService->getPayment($paymentId);
@@ -131,17 +187,29 @@ class PaymentController extends Controller
         }
 
         return view('payment-gateway::pages.manual-upload', compact('payment'));
-    }
-
-    public function verify(Request $request, string $gateway, string $transactionId)
+    }    /**
+     * Verify payment status with payment provider
+     * 
+     * @param Request $request
+     * @param string $gateway
+     * @param string $transactionId
+     * @return JsonResponse
+     */
+    public function verify(Request $request, string $gateway, string $transactionId): JsonResponse
     {
         $result = $this->paymentService->verifyPayment($gateway, $transactionId);
         
         return response()->json($result);
     }
 
-    // Admin methods for manual payment approval
-    public function approveManualPayment(Request $request, string $paymentId)
+    /**
+     * Approve a manual payment (admin action)
+     * 
+     * @param Request $request
+     * @param string $paymentId
+     * @return RedirectResponse
+     */
+    public function approveManualPayment(Request $request, string $paymentId): RedirectResponse
     {
         $result = $this->paymentService->approveManualPayment($paymentId);
         
@@ -152,7 +220,14 @@ class PaymentController extends Controller
         return back()->withErrors(['error' => $result['message']]);
     }
 
-    public function rejectManualPayment(Request $request, string $paymentId)
+    /**
+     * Reject a manual payment (admin action)
+     * 
+     * @param Request $request
+     * @param string $paymentId
+     * @return RedirectResponse
+     */
+    public function rejectManualPayment(Request $request, string $paymentId): RedirectResponse
     {
         $request->validate([
             'reason' => 'nullable|string|max:255'

@@ -4,10 +4,9 @@ return [
     'default_gateway' => env('PAYMENT_DEFAULT_GATEWAY', 'toyyibpay'),
     
     'currency' => env('PAYMENT_DEFAULT_CURRENCY', 'MYR'),
-    
-    'success_route' => 'payment.success',
-    'failed_route' => 'payment.failed',
-    'callback_route' => 'payment.callback',
+      'success_route' => 'payment-gateway.success',
+    'failed_route' => 'payment-gateway.failed',
+    'callback_route' => 'payment-gateway.callback',
     
     'gateways' => [
         'toyyibpay' => [

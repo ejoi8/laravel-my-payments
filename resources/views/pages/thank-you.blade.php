@@ -8,10 +8,10 @@
             <livewire:payment-status :payment-model="$payment" :auto-refresh="false" />
         @endif
         
-        <div class="mt-8">
+        {{-- <div class="mt-8">
             <a href="/" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md transition duration-200">
                 Continue
             </a>
-        </div>
+        </div> --}}
     </div>
 </x-payment-gateway::payment-layout>

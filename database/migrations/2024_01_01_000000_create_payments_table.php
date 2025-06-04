@@ -12,12 +12,16 @@ return new class extends Migration
         
         Schema::create($tableName, function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('reference_id')->unique();
+            $table->string('reference_id')->unique();            
             $table->string('gateway'); // toyyibpay, chipin, paypal, stripe, manual
             $table->decimal('amount', 10, 2);
             $table->string('currency', 3)->default('MYR');
             $table->enum('status', ['pending', 'paid', 'failed', 'cancelled', 'refunded'])->default('pending');
             $table->text('description')->nullable();
+            
+            // External reference fields
+            $table->string('external_reference_id')->nullable()->index();
+            $table->string('reference_type')->nullable(); // order, subscription, invoice, etc
             
             // Customer details
             $table->string('customer_name')->nullable();
@@ -40,11 +44,11 @@ return new class extends Migration
             
             // Additional metadata
             $table->json('metadata')->nullable();
-            
-            // Indexes
+              // Indexes
             $table->index(['gateway', 'status']);
             $table->index(['status', 'created_at']);
             $table->index('gateway_transaction_id');
+            $table->index(['external_reference_id', 'reference_type']);
         });
     }
 

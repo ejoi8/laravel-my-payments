@@ -6,10 +6,35 @@ use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use Ejoi8\PaymentGateway\Livewire\PaymentForm;
 use Ejoi8\PaymentGateway\Livewire\PaymentStatus;
+use Ejoi8\PaymentGateway\Services\PaymentService;
 
+/**
+ * Payment Gateway Service Provider
+ * 
+ * Registers the payment gateway services, routes and assets with Laravel.
+ */
 class PaymentGatewayServiceProvider extends ServiceProvider
 {
-    public function boot()
+    /**
+     * Bootstrap the package services
+     *
+     * @return void
+     */
+    public function boot(): void
+    {
+        $this->registerPublishableResources();
+        $this->registerRoutes();
+        $this->registerViews();
+        $this->registerMigrations();
+        $this->registerLivewireComponents();
+    }
+
+    /**
+     * Register publishable resources
+     *
+     * @return void
+     */
+    protected function registerPublishableResources(): void
     {
         // Publish migrations
         $this->publishes([
@@ -25,22 +50,54 @@ class PaymentGatewayServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/vendor/payment-gateway'),
         ], 'payment-gateway-views');
+    }
 
-        // Load routes
+    /**
+     * Register routes
+     *
+     * @return void
+     */
+    protected function registerRoutes(): void
+    {
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+    }
 
-        // Load views
+    /**
+     * Register views
+     *
+     * @return void
+     */
+    protected function registerViews(): void
+    {
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'payment-gateway');
+    }
 
-        // Load migrations
+    /**
+     * Register migrations
+     *
+     * @return void
+     */
+    protected function registerMigrations(): void
+    {
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+    }
 
-        // Register Livewire components
-        Livewire::component('payment-form', PaymentForm::class);
+    /**
+     * Register Livewire components
+     *
+     * @return void
+     */
+    protected function registerLivewireComponents(): void
+    {
         Livewire::component('payment-status', PaymentStatus::class);
     }
 
-    public function register()
+    /**
+     * Register the package services
+     *
+     * @return void
+     */
+    public function register(): void
     {
         // Merge config
         $this->mergeConfigFrom(
@@ -50,7 +107,7 @@ class PaymentGatewayServiceProvider extends ServiceProvider
 
         // Register services
         $this->app->singleton('payment-gateway', function () {
-            return new \Ejoi8\PaymentGateway\Services\PaymentService();
+            return new PaymentService();
         });
     }
 }
