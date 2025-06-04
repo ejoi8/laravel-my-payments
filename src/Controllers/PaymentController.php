@@ -73,6 +73,14 @@ class PaymentController extends Controller
      */
     public function callback(Request $request, string $gateway)
     {
+        // Log the incoming callback request
+        \Log::info('Payment callback received', [
+            'gateway' => $gateway,
+            'data' => $request->all(),
+            'ip' => $request->ip(),
+            'headers' => $request->headers->all()
+        ]);
+        
         $data = $request->all();
         
         $result = $this->paymentService->handleCallback($gateway, $data);

@@ -98,12 +98,15 @@ class ChipInGateway extends BaseGateway
             
             return $errorResponse;
         }
-    }/**
+    }
+    
+    /**
      * Handle callback notification from Chip-In
      * 
      * @param array $data Callback data
      * @return array Response with status
-     */    public function handleCallback(array $data): array
+     */    
+    public function handleCallback(array $data): array
     {
         $purchaseId = $data['id'] ?? null;
         $status = $data['status'] ?? null;
@@ -120,7 +123,9 @@ class ChipInGateway extends BaseGateway
 
         // Process the payment status directly
         return $this->processPaymentStatus($payment, $status, $purchaseId, $data);
-    }/**
+    }
+    
+    /**
      * Process payment status from callback
      * 
      * @param Payment $payment Payment record
@@ -167,7 +172,8 @@ class ChipInGateway extends BaseGateway
      * @param Payment $payment Payment record
      * @param array $response API response data
      * @return array Success response
-     */    private function handleSuccessfulPaymentCreation(Payment $payment, array $response): array
+     */    
+    private function handleSuccessfulPaymentCreation(Payment $payment, array $response): array
     {
         // Update payment properties and save
         $payment->payment_url = $response['checkout_url'];
@@ -186,7 +192,8 @@ class ChipInGateway extends BaseGateway
             'raw_response' => $response,
         ];
     }
-      /**
+      
+    /**
      * Send a request to the Chip-In API
      * 
      * @param string $endpoint API endpoint
@@ -247,7 +254,8 @@ class ChipInGateway extends BaseGateway
             'Accept: application/json',
         ];
     }
-      /**
+      
+    /**
      * Configure cURL request options
      * 
      * @param mixed $ch cURL handle
@@ -339,7 +347,8 @@ class ChipInGateway extends BaseGateway
 
         return $decodedResponse ?? [];
     }
-      /**
+      
+    /**
      * Verify payment status with Chip-In API
      * 
      * @param string $transactionId Transaction/purchase ID to verify
@@ -396,7 +405,9 @@ class ChipInGateway extends BaseGateway
             'payment_status' => 'error',
             'raw_response' => ['error' => $e->getMessage()]
         ];
-    }/**
+    }
+    
+    /**
      * Calculate total amount from products array (in cents)
      * Includes both regular prices and discounts
      */
@@ -414,7 +425,9 @@ class ChipInGateway extends BaseGateway
             $total += $subtotal;
         }
         return $total;
-    }    /**
+    }    
+    
+    /**
      * Create products array from payment data
      */
     private function createProductsFromData(array $data): array
@@ -461,7 +474,9 @@ class ChipInGateway extends BaseGateway
                 'quantity' => 1,
             ]
         ];
-    }    /**
+    }    
+    
+    /**
      * Prepare purchase data for Chip-In API
      * 
      * @param array $data Input data
@@ -577,7 +592,9 @@ class ChipInGateway extends BaseGateway
         }
 
         return $message;
-    }    /**
+    }    
+    
+    /**
      * Find payment by Chip-In transaction ID
      * 
      * @param string $transactionId Chip-In purchase ID
