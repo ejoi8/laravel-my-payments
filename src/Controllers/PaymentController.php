@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Ejoi8\PaymentGateway\Services\PaymentService;
 use Ejoi8\PaymentGateway\Models\Payment;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Payment Gateway Controller
@@ -74,7 +75,7 @@ class PaymentController extends Controller
     public function callback(Request $request, string $gateway)
     {
         // Log the incoming callback request
-        \Log::info('Payment callback received', [
+        Log::info('Payment callback received', [
             'gateway' => $gateway,
             'data' => $request->all(),
             'ip' => $request->ip(),
