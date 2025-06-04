@@ -165,7 +165,7 @@ class Payment extends Model
         return $this->update([
             'status'                 => self::STATUS_PAID,
             'gateway_transaction_id' => $gatewayTransactionId ?? $this->gateway_transaction_id,
-            'gateway_response'       => $gatewayResponse,
+            'callback_data'          => $gatewayResponse,
             'paid_at'                => now(),
         ]);
     }
