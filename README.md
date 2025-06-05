@@ -508,6 +508,93 @@ if ($result['success']) {
 When proof is uploaded with the payment creation, the user will be redirected directly to the thank you page instead of having to go through the proof upload page.
 ```
 
+## Payment Status Mapping
+
+This package provides a unified status system across all payment gateways. Each gateway's specific statuses are mapped to standardized internal statuses for consistency.
+
+### Internal Payment Statuses
+
+The universal statuses used across all gateways:
+- `'pending'` - Payment created, awaiting completion
+- `'paid'` - Payment successfully completed
+- `'failed'` - Payment failed, cancelled, or rejected
+- `'cancelled'` - Payment cancelled by user
+- `'refunded'` - Payment was refunded
+
+### Gateway Status Mappings
+
+#### ChipIn Gateway
+| ChipIn Status | Internal Status | Description |
+|---------------|----------------|-------------|
+| `'paid'` | `'paid'` | Payment completed successfully |
+| `'pending'` | `'pending'` | Payment is pending or awaiting confirmation |
+| `'error'` | `'failed'` | An error occurred during payment processing |
+| `'cancelled'` | `'failed'` | Payment was cancelled by user |
+| `'expired'` | `'failed'` | Payment has expired and is no longer valid |
+| `'refunded'` | `'refunded'` | Payment was refunded |
+| `'pending_refund'` | `'refunded'` | Refund is being processed |
+| `'hold'` | `'pending'` | Payment is on hold |
+| `'preauthorized'` | `'pending'` | Payment authorized but not yet captured |
+| `'blocked'` | `'failed'` | Payment attempt was blocked |
+
+#### ToyyibPay Gateway
+| ToyyibPay Status | Internal Status | Description |
+|------------------|----------------|-------------|
+| `'1'` (SUCCESS) | `'paid'` | Payment completed successfully |
+| `'2'` (PENDING) | `'pending'` | Payment is pending |
+| `'3'` (FAILED) | `'failed'` | Payment failed |
+| Any other value | `'failed'` | Payment failed |
+
+#### Manual Payment Gateway
+| Manual Status | Internal Status | Description |
+|---------------|----------------|-------------|
+| Created | `'pending'` | Payment record created, awaiting proof upload |
+| Proof Uploaded | `'pending'` | Proof uploaded, awaiting admin verification |
+| Admin Approved | `'paid'` | Payment approved by administrator |
+| Admin Rejected | `'failed'` | Payment rejected by administrator |
+
+### Status Workflow Examples
+
+#### ChipIn Payment Flow
+```
+1. Payment Created → 'pending'
+2. User Pays → 'paid' (success) OR 'failed'/'cancelled'/'expired' (failure)
+3. Refund Requested → 'refunded'
+```
+
+#### ToyyibPay Payment Flow
+```
+1. Payment Created → 'pending'
+2. API Response → '1' (paid) OR '2' (pending) OR '3' (failed)
+```
+
+#### Manual Payment Flow
+```
+1. Payment Created → 'pending'
+2. Proof Uploaded → 'pending' (awaiting review)
+3. Admin Action → 'paid' (approved) OR 'failed' (rejected)
+```
+
+### Checking Payment Status
+
+You can check payment status using the Payment model:
+
+```php
+use Ejoi8\PaymentGateway\Models\Payment;
+
+$payment = Payment::find($paymentId);
+
+// Check specific status
+if ($payment->status === Payment::STATUS_PAID) {
+    // Payment is completed
+}
+
+// Use scope methods
+$paidPayments = Payment::paid()->get();
+$pendingPayments = Payment::pending()->get();
+$failedPayments = Payment::failed()->get();
+```
+
 ## Required Fields
 
 All payment gateways require the following common fields:
