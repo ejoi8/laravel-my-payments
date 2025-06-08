@@ -20,6 +20,8 @@ A unified payment gateway package for Laravel supporting multiple payment provid
   - [Manual Payments](#manual-payments)
 - [Required Fields](#required-fields)
 - [Configuration](#configuration)
+- [Local Development & Testing](#local-development--testing)
+  - [Webhook Testing with ngrok](#webhook-testing-with-ngrok)
 - [License](#license)
 
 ## Features
@@ -735,6 +737,121 @@ PAYPAL_CLIENT_SECRET=your_client_secret
 STRIPE_PUBLISHABLE_KEY=your_publishable_key
 STRIPE_SECRET_KEY=your_secret_key
 ```
+
+## Local Development & Testing
+
+### Webhook Testing with ngrok
+
+When developing and testing payment webhooks locally, you need to expose your local Laravel application to the internet so payment gateways can send callback notifications to your development environment. **ngrok** is the recommended tool for this purpose.
+
+#### Prerequisites
+
+- A local Laravel development environment (Laragon, XAMPP, Valet, etc.)
+- ngrok account (free tier available)
+
+#### Step-by-Step Setup
+
+**1. Install ngrok**
+
+Download and install ngrok from [https://ngrok.com/download](https://ngrok.com/download)
+
+**2. Configure Authentication**
+
+After creating an ngrok account, get your authentication token from the [ngrok dashboard](https://dashboard.ngrok.com/get-started/your-authtoken) and add it to ngrok:
+
+```bash
+ngrok config add-authtoken YOUR_AUTHTOKEN_HERE
+```
+
+**3. Expose Your Local Application**
+
+If you're using Laragon with a local domain like `paymentgatewaypackage.local`, run:
+
+```bash
+ngrok http --host-header=paymentgatewaypackage.local 80
+```
+
+For other setups, adjust the command accordingly:
+- **XAMPP/WAMP**: `ngrok http 80` or `ngrok http localhost:80`
+- **Laravel Valet**: `ngrok http 80` (if using .test domains)
+- **Artisan serve**: `ngrok http 8000`
+
+**4. Fix URL Generation for ngrok**
+
+Add the following code to your `AppServiceProvider.php` (in the `boot()` method) to ensure Laravel generates the correct URLs when accessed through ngrok:
+
+```php
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
+
+public function boot(): void
+{
+    // Check if we're accessing via ngrok
+    if (isset($_SERVER['HTTP_X_FORWARDED_HOST']) && 
+        Str::contains($_SERVER['HTTP_X_FORWARDED_HOST'], 'ngrok')) {
+        
+        // Force the URL to use the ngrok domain
+        $schema = 'https';
+        $host = $_SERVER['HTTP_X_FORWARDED_HOST'];
+        URL::forceRootUrl("{$schema}://{$host}");
+        URL::forceScheme('https');
+    }
+}
+```
+
+**5. Configure Webhook URLs**
+
+Use the ngrok HTTPS URL for your webhook endpoints in the payment gateway dashboards:
+
+```
+https://abc123.ngrok-free.app/payment-callbacks/chipin
+https://abc123.ngrok-free.app/payment-callbacks/toyyibpay
+https://abc123.ngrok-free.app/payment-callbacks/paypal
+```
+
+#### Testing Your Setup
+
+1. **Start your local Laravel server** (if not using Laragon/Valet)
+2. **Run ngrok** with the appropriate command
+3. **Copy the HTTPS URL** from ngrok terminal output
+4. **Update payment gateway webhook URLs** in their respective dashboards
+5. **Test a payment** and monitor the ngrok terminal for incoming webhook requests
+
+#### Troubleshooting
+
+**Common Issues:**
+
+- **Mixed Content Errors**: Always use the HTTPS URL from ngrok, not HTTP
+- **Webhook Not Received**: Check that your local server is running and the webhook URL is correct
+- **Wrong URL in Routes**: Ensure the `AppServiceProvider` fix is properly implemented
+- **Firewall Issues**: Make sure your local development environment can receive external requests
+
+**Testing Webhook Reception:**
+
+You can test if webhooks are being received by adding a simple log in your webhook handler:
+
+```php
+public function handleCallback(Request $request, string $gateway)
+{
+    Log::info('Webhook received', [
+        'gateway' => $gateway,
+        'data' => $request->all(),
+        'headers' => $request->headers->all()
+    ]);
+    
+    $paymentService = app(PaymentService::class);
+    $result = $paymentService->handleCallback($gateway, $request->all());
+    
+    return response('OK');
+}
+```
+
+#### Security Notes
+
+- ngrok URLs are publicly accessible - only use for development
+- Don't commit ngrok URLs to version control
+- Regenerate webhook URLs for each development session
+- Use environment-specific webhook configurations
 
 ## License
 

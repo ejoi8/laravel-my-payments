@@ -21,7 +21,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Ejoi8\\PaymentGateway\\": "src/"
+            "Ejoi8\\PaymentGateway\\": "src/",
+            "Ejoi8\\PaymentGateway\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {

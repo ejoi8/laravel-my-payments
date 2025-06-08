@@ -4,6 +4,8 @@ namespace Ejoi8\PaymentGateway\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
 /**
@@ -13,7 +15,9 @@ use Illuminate\Support\Carbon;
  */
 class Payment extends Model
 {
-    use HasUuids;    /**
+    use HasUuids;
+    
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<string>
@@ -46,12 +50,12 @@ class Payment extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'amount' => 'decimal:2',
+        'amount'           => 'decimal:2',
         'gateway_response' => 'array',
-        'callback_data' => 'array',
-        'metadata' => 'array',
-        'paid_at' => 'datetime',
-        'failed_at' => 'datetime',
+        'callback_data'    => 'array',
+        'metadata'         => 'array',
+        'paid_at'          => 'datetime',
+        'failed_at'        => 'datetime',
     ];
 
     /**
@@ -71,9 +75,11 @@ class Payment extends Model
      */
     public function __construct(array $attributes = [])
     {
-        parent::__construct($attributes);
+        parent::__construct($attributes);        
         $this->setTable($this->getTableName());
-    }    /**
+    }
+
+    /**
      * Payment status constants
      */
     public const STATUS_PENDING   = 'pending';
@@ -83,36 +89,30 @@ class Payment extends Model
     public const STATUS_REFUNDED  = 'refunded';
 
     /**
-     * Scope for pending payments
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * Scope a query to only include pending payments.
      */
-    public function scopePending($query)
+    #[Scope]
+    protected function pending(Builder $query): void
     {
-        return $query->where('status', self::STATUS_PENDING);
+        $query->where('status', self::STATUS_PENDING);
     }
 
     /**
-     * Scope for paid payments
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * Scope a query to only include paid payments.
      */
-    public function scopePaid($query)
+    #[Scope]
+    protected function paid(Builder $query): void
     {
-        return $query->where('status', self::STATUS_PAID);
+        $query->where('status', self::STATUS_PAID);
     }
 
     /**
-     * Scope for failed payments
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * Scope a query to only include failed payments.
      */
-    public function scopeFailed($query)
+    #[Scope]
+    protected function failed(Builder $query): void
     {
-        return $query->where('status', self::STATUS_FAILED);
+        $query->where('status', self::STATUS_FAILED);
     }
 
     /**
@@ -202,25 +202,17 @@ class Payment extends Model
         }
         
         return $query;
-    }
-
-    /**
+    }    /**
      * Scope for filtering by external reference
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $externalReferenceId External reference ID (e.g. order ID)
-     * @param string|null $referenceType Reference type (e.g. 'order', 'subscription')
-     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeByExternalReference($query, $externalReferenceId, $referenceType = null)
+    #[Scope]
+    protected function byExternalReference(Builder $query, string $externalReferenceId, ?string $referenceType = null): void
     {
         $query->where('external_reference_id', $externalReferenceId);
         
         if ($referenceType) {
             $query->where('reference_type', $referenceType);
         }
-        
-        return $query;
     }
 
     /**
