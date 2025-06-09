@@ -4,6 +4,7 @@ namespace Ejoi8\PaymentGateway\Gateways;
 
 use Ejoi8\PaymentGateway\Models\Payment;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Exception;
 use InvalidArgumentException;
 use Illuminate\Database\Eloquent\Builder;
@@ -192,8 +193,7 @@ class ChipInGateway extends BaseGateway
             'raw_response' => $response,
         ];
     }
-      
-    /**
+        /**
      * Send a request to the Chip-In API
      * 
      * @param string $endpoint API endpoint
@@ -207,23 +207,28 @@ class ChipInGateway extends BaseGateway
         $url = $this->getApiUrl() . $endpoint;
         $headers = $this->prepareRequestHeaders();
 
-        $ch = curl_init();
-        $this->configureCurlRequest($ch, $url, $headers, $method, $data);
+        try {
+            $http = Http::withHeaders($headers)
+                ->timeout(30);
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-        
-        if ($curlError) {
+            if ($method === 'POST') {
+                $response = $http->post($url, $data);
+            } else {
+                $response = $http->get($url, $data);
+            }
+
+            $this->handleHttpErrorResponse($response->status(), $url, $method, $data, $response->body());
+            
+            return $this->parseJsonResponse($response->body());
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
             /** @phpstan-ignore-next-line */
-            Log::error('Chip-in cURL error: ' . $curlError);
-            throw new Exception("Chip-in API request failed: {$curlError}");
+            Log::error('Chip-in connection error: ' . $e->getMessage());
+            throw new Exception("Chip-in API connection failed: {$e->getMessage()}");
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            /** @phpstan-ignore-next-line */
+            Log::error('Chip-in request error: ' . $e->getMessage());
+            throw new Exception("Chip-in API request failed: {$e->getMessage()}");
         }
-        
-        $this->handleHttpErrorResponse($httpCode, $url, $method, $data, $response);
-        
-        return $this->parseJsonResponse($response);
     }
     
     /**
@@ -237,8 +242,7 @@ class ChipInGateway extends BaseGateway
         if ($this->config['sandbox'] ?? true) {
             return self::API_SANDBOX_URL;
         }
-        
-        return self::API_PRODUCTION_URL;
+          return self::API_PRODUCTION_URL;
     }
     
     /**
@@ -249,36 +253,12 @@ class ChipInGateway extends BaseGateway
     private function prepareRequestHeaders(): array
     {
         return [
-            'Authorization: Bearer ' . $this->config['secret_key'],
-            'Content-Type: application/json',
-            'Accept: application/json',
+            'Authorization' => 'Bearer ' . $this->config['secret_key'],
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
         ];
     }
       
-    /**
-     * Configure cURL request options
-     * 
-     * @param mixed $ch cURL handle
-     * @param string $url Request URL
-     * @param array $headers Request headers
-     * @param string $method HTTP method
-     * @param array $data Request data
-     * @return void
-     */
-    private function configureCurlRequest($ch, string $url, array $headers, string $method, array $data): void
-    {
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
-        if ($method === 'POST') {
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        }
-    }
-    
     /**
      * Handle HTTP error responses
      * 

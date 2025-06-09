@@ -3,6 +3,7 @@
 namespace Ejoi8\PaymentGateway\Gateways;
 
 use Ejoi8\PaymentGateway\Models\Payment;
+use Illuminate\Support\Facades\Http;
 use Exception;
 
 /**
@@ -228,8 +229,7 @@ class ToyyibpayGateway extends BaseGateway
             ->where('gateway', $this->getName())
             ->first();
     }
-    
-    /**
+      /**
      * Make API request to ToyyibPay
      * 
      * @param string $endpoint API endpoint
@@ -246,38 +246,27 @@ class ToyyibpayGateway extends BaseGateway
             $data['userSecretKey'] = $this->config['secret_key'];
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Add timeout
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/x-www-form-urlencoded'
-        ]);
+        try {
+            $response = Http::timeout(30)
+                ->asForm()
+                ->post($url, $data);
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
+            if (!$response->successful()) {
+                throw new Exception("ToyyibPay API request failed with HTTP code: {$response->status()}");
+            }
 
-        if ($error) {
-            throw new Exception("ToyyibPay API cURL error: {$error}");
+            $decodedResponse = $response->json();
+            
+            if ($decodedResponse === null && json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception("ToyyibPay API response JSON decode error: " . json_last_error_msg());
+            }
+
+            return $decodedResponse ?? [];
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            throw new Exception("ToyyibPay API connection failed: {$e->getMessage()}");
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            throw new Exception("ToyyibPay API request failed: {$e->getMessage()}");
         }
-
-        if ($httpCode !== 200) {
-            throw new Exception("ToyyibPay API request failed with HTTP code: {$httpCode}");
-        }
-
-        $decodedResponse = json_decode($response, true);
-        
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("ToyyibPay API response JSON decode error: " . json_last_error_msg());
-        }
-
-        return $decodedResponse ?? [];
     }
 
     /**
