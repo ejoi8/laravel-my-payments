@@ -1,13 +1,9 @@
-<div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto" 
-     @if($autoRefresh) 
-         wire:poll.{{ $refreshInterval }}ms="refresh" 
-     @endif>
-    
+<div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
     @if($payment)
         <!-- Payment Header -->
         <div class="text-center mb-8">
-            <div class="text-6xl mb-4 {{ $this->statusColor }}">
-                {{ $this->statusIcon }}
+            <div class="text-6xl mb-4 {{ $payment->status === 'paid' ? 'text-green-600' : ($payment->status === 'failed' || $payment->status === 'cancelled' ? 'text-red-600' : ($payment->status === 'refunded' ? 'text-blue-600' : 'text-yellow-600')) }}">
+                {{ $payment->status === 'paid' ? '✓' : ($payment->status === 'failed' || $payment->status === 'cancelled' ? '✗' : ($payment->status === 'refunded' ? '↺' : '⏳')) }}
             </div>
             <h2 class="text-2xl font-bold text-gray-900 mb-1">
                 Payment {{ ucfirst($payment->status) }}
@@ -72,7 +68,8 @@
                 </div>
                 @endif
 
-                <!-- Timestamps -->                <div class="bg-white p-3 rounded shadow-sm">
+                <!-- Timestamps -->
+                <div class="bg-white p-3 rounded shadow-sm">
                     <dt class="text-xs uppercase font-medium text-gray-500">Created</dt>
                     <dd class="mt-1 text-sm text-gray-900">
                         @if($payment && $payment->created_at)
@@ -106,16 +103,6 @@
 
         <!-- Action Buttons -->
         <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-            {{-- @if($payment->status === 'pending' && !$autoRefresh)
-                <button wire:click="verifyPayment" 
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition duration-200 shadow-sm flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Check Payment Status
-                </button>
-            @endif --}}
-
             @if($payment->is_manual_payment && $payment->status === 'pending' && !$payment->proof_file_path)
                 <a href="{{ route('payment-gateway.manual.upload', $payment->id) }}" 
                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition duration-200 shadow-sm flex items-center justify-center">
@@ -136,20 +123,18 @@
                     </div>
                 </div>
             @endif
-        </div>
 
-        <!-- Auto-refresh indicator -->
-        @if($autoRefresh && $payment->status === 'pending')
-            <div class="mt-4 text-center text-xs text-gray-500 bg-gray-50 py-2 px-3 rounded-md border border-gray-200">
-                <div class="flex items-center justify-center">
-                    <svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Auto-refreshing every {{ $refreshInterval / 1000 }} seconds
+            @if($payment->status === 'pending')
+                <div class="text-center bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded shadow-sm">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <p>Payment is being processed. Please refresh page to check status.</p>
+                    </div>
                 </div>
-            </div>
-        @endif
+            @endif
+        </div>
 
     @else
         <!-- Payment Not Found State -->

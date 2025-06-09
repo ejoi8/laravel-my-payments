@@ -3,9 +3,6 @@
 namespace Ejoi8\PaymentGateway;
 
 use Illuminate\Support\ServiceProvider;
-use Livewire\Livewire;
-use Ejoi8\PaymentGateway\Livewire\PaymentForm;
-use Ejoi8\PaymentGateway\Livewire\PaymentStatus;
 use Ejoi8\PaymentGateway\Services\PaymentService;
 
 /**
@@ -19,14 +16,12 @@ class PaymentGatewayServiceProvider extends ServiceProvider
      * Bootstrap the package services
      *
      * @return void
-     */
-    public function boot(): void
+     */    public function boot(): void
     {
         $this->registerPublishableResources();
         $this->registerRoutes();
         $this->registerViews();
         $this->registerMigrations();
-        $this->registerLivewireComponents();
     }
 
     /**
@@ -80,19 +75,7 @@ class PaymentGatewayServiceProvider extends ServiceProvider
     protected function registerMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-    }
-
-    /**
-     * Register Livewire components
-     *
-     * @return void
-     */
-    protected function registerLivewireComponents(): void
-    {
-        Livewire::component('payment-status', PaymentStatus::class);
-    }
-
-    /**
+    }    /**
      * Register the package services
      *
      * @return void

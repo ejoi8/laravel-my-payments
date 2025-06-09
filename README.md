@@ -28,7 +28,7 @@ A unified payment gateway package for Laravel supporting multiple payment provid
 
 - ✅ Unified payment interface
 - ✅ Single payment table for all gateways
-- ✅ Livewire components with Tailwind CSS
+- ✅ Beautiful UI with Tailwind CSS
 - ✅ Automatic callback handling
 - ✅ External reference support (for orders, subscriptions, etc.)
 - ✅ Open/Closed principle for easy extension
@@ -708,7 +708,6 @@ You can use these examples as a starting point for your own integration.
 
 - PHP ^8.1
 - Laravel ^10.0|^11.0|^12.0
-- Livewire ^3.0
 
 ## Configuration
 

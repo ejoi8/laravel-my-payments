@@ -22,10 +22,7 @@
             .error-box {
                 @apply message-box bg-red-50 border-red-200 text-red-700;
             }
-        }
-    </style>
-    
-    @livewireStyles
+        }    </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="payment-container">
@@ -74,9 +71,6 @@
         <!-- Footer -->
         <footer class="mt-12 text-center text-xs text-gray-400">
             <p>© {{ date('Y') }} Payment Processing. All rights reserved.</p>
-        </footer>
-    </div>
-
-    @livewireScripts
+        </footer>    </div>
 </body>
 </html>

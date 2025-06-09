@@ -1,6 +1,6 @@
 <x-payment-gateway::payment-layout title="Payment Details">
     @if($payment)
-        <livewire:payment-status :payment-model="$payment" />
+        @include('payment-gateway::partials.payment-status', ['payment' => $payment])
     @else
         <div class="text-center py-8">
             <h1 class="text-2xl font-bold text-gray-900 mb-4">Payment Not Found</h1>
