@@ -11,6 +11,7 @@ use Ejoi8\PaymentGateway\PaymentGatewayServiceProvider;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class PaymentServiceTest extends TestCase
 {
@@ -79,7 +80,7 @@ class PaymentServiceTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_payment_with_valid_gateway()
     {
         // Arrange
@@ -110,7 +111,7 @@ class PaymentServiceTest extends TestCase
         $this->assertInstanceOf(Payment::class, $result['payment']);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_when_gateway_not_found()
     {
         // Arrange
@@ -125,7 +126,7 @@ class PaymentServiceTest extends TestCase
         $this->assertStringContainsString("Gateway 'non_existent_gateway' not found", $result['message']);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_when_gateway_disabled()
     {
         // Arrange
@@ -142,7 +143,7 @@ class PaymentServiceTest extends TestCase
         $this->assertStringContainsString("not found or not enabled", $result['message']);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_gateway_exceptions_gracefully()
     {
         // Arrange
@@ -164,7 +165,7 @@ class PaymentServiceTest extends TestCase
         $this->assertInstanceOf(Exception::class, $result['error']);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_callback_successfully()
     {
         // Arrange
@@ -188,7 +189,7 @@ class PaymentServiceTest extends TestCase
         $this->assertEquals('paid', $result['status']);
     }
 
-    /** @test */
+    #[Test]
     public function it_verifies_payment_successfully()
     {
         // Arrange
@@ -212,7 +213,7 @@ class PaymentServiceTest extends TestCase
         $this->assertTrue($result['verified']);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_if_gateway_exists_and_enabled()
     {
         // Arrange
@@ -223,7 +224,7 @@ class PaymentServiceTest extends TestCase
         $this->assertFalse($this->paymentService->hasGateway('non_existent'));
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_available_gateways_only_enabled_ones()
     {
         // Arrange
@@ -248,7 +249,7 @@ class PaymentServiceTest extends TestCase
         $this->assertCount(1, $availableGateways);
         $this->assertArrayHasKey('test_gateway', $availableGateways);
         $this->assertArrayNotHasKey('disabled_gateway', $availableGateways);
-    }    /** @test */
+    }    #[Test]
     public function it_creates_payment_with_external_reference()
     {
         // Arrange

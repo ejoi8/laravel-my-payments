@@ -7,6 +7,7 @@ use Ejoi8\PaymentGateway\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\Eloquent\Model;
 use Ejoi8\PaymentGateway\PaymentGatewayServiceProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class PaymentModelTest extends TestCase
 {
@@ -38,9 +39,7 @@ class PaymentModelTest extends TestCase
                 'class' => \Ejoi8\PaymentGateway\Gateways\ManualPaymentGateway::class,
             ],
         ]);
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_has_correct_fillable_attributes()
     {
         // Arrange & Act
@@ -73,9 +72,7 @@ class PaymentModelTest extends TestCase
         foreach ($expectedFillable as $attribute) {
             $this->assertContains($attribute, $fillable);
         }
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_casts_attributes_correctly()
     {
         // Arrange & Act
@@ -89,9 +86,7 @@ class PaymentModelTest extends TestCase
         $this->assertEquals('array', $casts['metadata']);
         $this->assertEquals('datetime', $casts['paid_at']);
         $this->assertEquals('datetime', $casts['failed_at']);
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_generates_unique_reference_id()
     {
         // Arrange
@@ -105,9 +100,7 @@ class PaymentModelTest extends TestCase
         $this->assertNotEquals($referenceId1, $referenceId2);
         $this->assertStringStartsWith('PAY-', $referenceId1);
         $this->assertStringStartsWith('PAY-', $referenceId2);
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_identifies_manual_payment_correctly()
     {
         // Arrange
@@ -117,9 +110,7 @@ class PaymentModelTest extends TestCase
         // Act & Assert
         $this->assertTrue($manualPayment->is_manual_payment);
         $this->assertFalse($chipinPayment->is_manual_payment);
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_formats_amount_with_currency()
     {
         // Arrange
@@ -133,9 +124,7 @@ class PaymentModelTest extends TestCase
 
         // Assert
         $this->assertEquals('123.45 MYR', $formattedAmount);
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_provides_correct_status_badge_classes()
     {
         // Arrange & Act & Assert
@@ -163,9 +152,7 @@ class PaymentModelTest extends TestCase
             'bg-blue-100 text-blue-800',
             (new Payment(['status' => Payment::STATUS_REFUNDED]))->status_badge
         );
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_marks_payment_as_paid_correctly()
     {
         // Arrange
@@ -192,9 +179,7 @@ class PaymentModelTest extends TestCase
 
         // Assert
         $this->assertTrue($result);
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_marks_payment_as_failed_correctly()
     {
         // Arrange
@@ -215,9 +200,7 @@ class PaymentModelTest extends TestCase
 
         // Assert
         $this->assertTrue($result);
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_has_status_constants()
     {
         // Assert
@@ -225,10 +208,7 @@ class PaymentModelTest extends TestCase
         $this->assertEquals('paid', Payment::STATUS_PAID);
         $this->assertEquals('failed', Payment::STATUS_FAILED);
         $this->assertEquals('cancelled', Payment::STATUS_CANCELLED);
-        $this->assertEquals('refunded', Payment::STATUS_REFUNDED);
-    }
-
-    /** @test */
+        $this->assertEquals('refunded', Payment::STATUS_REFUNDED);    }    #[Test]
     public function it_builds_external_reference_query()
     {
         // This test would require a real database connection to fully test
@@ -237,14 +217,17 @@ class PaymentModelTest extends TestCase
         // Arrange
         $payment = new Payment();
         
-        // Act & Assert - Test that the method exists and can be called
-        $this->assertTrue(method_exists($payment, 'scopeByExternalReference'));
+        // Act & Assert - Test that the scope method exists using reflection
+        $reflection = new \ReflectionClass($payment);
+        $methods = $reflection->getMethods();
+        $scopeMethodExists = collect($methods)->contains(function ($method) {
+            return $method->getName() === 'byExternalReference';
+        });
+        $this->assertTrue($scopeMethodExists);
         
         // Test the static method
         $this->assertTrue(method_exists(Payment::class, 'findByExternalReference'));
-    }
-
-    /** @test */
+    }    #[Test]
     public function it_uses_configured_table_name()
     {
         // Arrange

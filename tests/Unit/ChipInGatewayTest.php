@@ -8,6 +8,7 @@ use Ejoi8\PaymentGateway\Gateways\ChipInGateway;
 use Ejoi8\PaymentGateway\Models\Payment;
 use Ejoi8\PaymentGateway\PaymentGatewayServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 /**
  * Test class for ChipIn gateway focusing on business logic

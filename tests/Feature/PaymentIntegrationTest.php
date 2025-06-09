@@ -8,6 +8,7 @@ use Ejoi8\PaymentGateway\Services\PaymentService;
 use Ejoi8\PaymentGateway\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
+use PHPUnit\Framework\Attributes\Test;
 
 class PaymentIntegrationTest extends TestCase
 {
@@ -87,7 +88,7 @@ class PaymentIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_payment_record_in_database()
     {
         // Arrange
@@ -121,7 +122,7 @@ class PaymentIntegrationTest extends TestCase
         $this->assertStringStartsWith('PAY-', $payment->reference_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_payment_with_external_reference()
     {
         // Arrange
@@ -147,7 +148,7 @@ class PaymentIntegrationTest extends TestCase
             'reference_type' => 'order',
             'amount' => 250.00
         ]);
-    }    /** @test */
+    }    #[Test]
     public function it_finds_payments_by_external_reference()
     {
         // Arrange
@@ -191,7 +192,7 @@ class PaymentIntegrationTest extends TestCase
         $this->assertEquals('PAY-TEST-2', $latestPayment->reference_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_payment_status_transitions()
     {
         // Arrange
@@ -233,7 +234,7 @@ class PaymentIntegrationTest extends TestCase
         $this->assertEquals('Insufficient funds', $failedPayment->metadata['failure_reason']);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_query_scopes_correctly()
     {
         // Arrange - Create payments with different statuses
@@ -279,7 +280,7 @@ class PaymentIntegrationTest extends TestCase
         $this->assertEquals('PAY-FAILED-1', $failedPayments->first()->reference_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_formatted_amount_correctly()
     {
         // Arrange
@@ -299,7 +300,7 @@ class PaymentIntegrationTest extends TestCase
         $this->assertEquals('1,234.56 USD', $formattedAmount);
     }
 
-    /** @test */
+    #[Test]
     public function it_identifies_manual_payments()
     {
         // Arrange
@@ -326,7 +327,7 @@ class PaymentIntegrationTest extends TestCase
         $this->assertFalse($chipinPayment->is_manual_payment);
     }
 
-    /** @test */
+    #[Test]
     public function it_provides_correct_status_badge_classes()
     {
         // Test all status badge classes
@@ -354,7 +355,7 @@ class PaymentIntegrationTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_filters_payments_by_external_reference_scope()
     {
         // Arrange
@@ -397,7 +398,7 @@ class PaymentIntegrationTest extends TestCase
         $this->assertEquals('PAY-SUB-1', $subscriptionPayments->first()->reference_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_unique_reference_ids()
     {
         // Act - Create multiple payments

@@ -14,6 +14,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
+use PHPUnit\Framework\Attributes\Test;
 
 class PaymentControllerTest extends TestCase
 {
@@ -77,7 +78,7 @@ class PaymentControllerTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_payment_successfully()
     {
         // Arrange
@@ -113,7 +114,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals('https://payment.example.com/pay/12345', $response->getTargetUrl());
     }
 
-    /** @test */
+    #[Test]
     public function it_redirects_to_upload_page_for_manual_payments()
     {
         // Arrange
@@ -145,7 +146,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals('https://example.com/manual-upload/12345', $response->getTargetUrl());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_back_with_errors_when_payment_creation_fails()
     {
         // Arrange
@@ -175,7 +176,7 @@ class PaymentControllerTest extends TestCase
         $this->assertTrue($response->getSession()->has('errors'));
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields_for_payment_creation()
     {
         // Arrange
@@ -189,7 +190,7 @@ class PaymentControllerTest extends TestCase
         $this->controller->create($request);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_callback_with_paid_status()
     {
         // Arrange
@@ -225,7 +226,7 @@ class PaymentControllerTest extends TestCase
         $this->assertStringContainsString('/payment-gateway/success', $response->getTargetUrl());
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_callback_with_failed_status()
     {
         // Arrange
@@ -259,7 +260,7 @@ class PaymentControllerTest extends TestCase
         $this->assertStringContainsString('/payment-gateway/failed', $response->getTargetUrl());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_json_error_when_callback_fails()
     {
         // Arrange
@@ -286,7 +287,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals('Invalid callback data', $responseData['error']);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_callback_requests()
     {
         // Arrange
@@ -307,7 +308,7 @@ class PaymentControllerTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_success_page_with_payment_from_request()
     {
         // Arrange
@@ -333,7 +334,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals($payment, $response->getData()['payment']);
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_success_page_with_payment_from_session()
     {
         // Arrange
@@ -355,7 +356,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals($payment, $response->getData()['payment']);
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_failed_page()
     {
         // Arrange
@@ -381,7 +382,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals($payment, $response->getData()['payment']);
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_payment_details()
     {
         // Arrange
@@ -405,7 +406,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals($payment, $response->getData()['payment']);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_404_when_payment_not_found()
     {
         // Arrange
@@ -419,7 +420,7 @@ class PaymentControllerTest extends TestCase
         $this->controller->show('NON-EXISTENT');
     }
 
-    /** @test */
+    #[Test]
     public function it_displays_manual_upload_form()
     {
         // Arrange
@@ -446,7 +447,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals($payment, $response->getData()['payment']);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_manual_upload_successfully()
     {
         // Arrange
@@ -482,7 +483,7 @@ class PaymentControllerTest extends TestCase
         $this->assertStringContainsString('/payment-gateway/success', $response->getTargetUrl());
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_upload_file_requirements()
     {
         // Arrange
@@ -506,7 +507,7 @@ class PaymentControllerTest extends TestCase
         $this->controller->manualUpload($request, '1');
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_404_for_non_manual_payment_upload()
     {
         // Arrange
@@ -528,7 +529,7 @@ class PaymentControllerTest extends TestCase
         $this->controller->manualUpload($request, '1');
     }
 
-    /** @test */
+    #[Test]
     public function it_verifies_payment_status()
     {
         // Arrange
@@ -555,7 +556,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals('paid', $responseData['status']);
     }
 
-    /** @test */
+    #[Test]
     public function it_approves_manual_payment()
     {
         // Arrange
@@ -579,7 +580,7 @@ class PaymentControllerTest extends TestCase
         $this->assertTrue($response->getSession()->has('success'));
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_manual_payment_approval_failure()
     {
         // Arrange
@@ -603,7 +604,7 @@ class PaymentControllerTest extends TestCase
         $this->assertTrue($response->getSession()->has('errors'));
     }
 
-    /** @test */
+    #[Test]
     public function it_rejects_manual_payment_with_reason()
     {
         // Arrange
@@ -629,7 +630,7 @@ class PaymentControllerTest extends TestCase
         $this->assertTrue($response->getSession()->has('success'));
     }
 
-    /** @test */
+    #[Test]
     public function it_rejects_manual_payment_without_reason()
     {
         // Arrange
@@ -653,7 +654,7 @@ class PaymentControllerTest extends TestCase
         $this->assertTrue($response->getSession()->has('success'));
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_manual_payment_rejection_failure()
     {
         // Arrange
@@ -679,7 +680,7 @@ class PaymentControllerTest extends TestCase
         $this->assertTrue($response->getSession()->has('errors'));
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_payment_from_request_parameter()
     {
         // Arrange
@@ -699,7 +700,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals($payment, $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_gets_payment_from_session()
     {
         // Arrange
@@ -715,7 +716,7 @@ class PaymentControllerTest extends TestCase
         $this->assertEquals($payment, $result);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_null_when_no_payment_found()
     {
         // Arrange

@@ -9,6 +9,7 @@ use Ejoi8\PaymentGateway\Models\Payment;
 use Ejoi8\PaymentGateway\PaymentGatewayServiceProvider;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ManualPaymentGatewayTest extends TestCase
 {
@@ -65,11 +66,11 @@ class ManualPaymentGatewayTest extends TestCase
             'max_file_size' => 5120, // KB
         ]);
         return $gateway;
-    }    /** @test */
+    }    #[Test]
     public function it_returns_correct_gateway_name()
     {
         $this->assertEquals('manual', $this->getGateway()->getName());
-    }    /** @test */
+    }    #[Test]
     public function it_creates_manual_payment_without_proof()
     {
         // Act
@@ -92,7 +93,7 @@ class ManualPaymentGatewayTest extends TestCase
         $this->assertEquals('pending', $payment->status);
         $this->assertEquals('test@example.com', $payment->customer_email);
         $this->assertEquals('Test manual payment', $payment->description);
-    }    /** @test */
+    }    #[Test]
     public function it_creates_manual_payment_with_proof()
     {
         // Create a fake uploaded file
@@ -120,7 +121,7 @@ class ManualPaymentGatewayTest extends TestCase
         $this->assertNotNull($payment->proof_file_path);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_amount_field()
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -130,7 +131,7 @@ class ManualPaymentGatewayTest extends TestCase
             'customer_email' => 'test@example.com'
             // Missing amount
         ]);
-    }    /** @test */
+    }    #[Test]
     public function it_rejects_oversized_files()
     {
         // Create oversized file (6MB > 5MB limit)
@@ -144,7 +145,7 @@ class ManualPaymentGatewayTest extends TestCase
         ]);// Assert
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('File size exceeds maximum allowed', $result['message']);
-    }    /** @test */    public function it_rejects_invalid_file_extensions()
+    }    #[Test]    public function it_rejects_invalid_file_extensions()
     {
         // Create file with invalid extension
         $invalidFile = UploadedFile::fake()->create('malware.exe', 100);
@@ -158,14 +159,14 @@ class ManualPaymentGatewayTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('File type not allowed', $result['message']);
         $this->assertStringContainsString('jpg, jpeg, png, pdf', $result['message']);
-    }    /** @test */
+    }    #[Test]
     public function it_handles_callback_with_error_message()
     {
         // Act
         $result = $this->getGateway()->handleCallback(['test' => 'data']);// Assert
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('Manual payments do not support callbacks', $result['message']);
-    }    /** @test */
+    }    #[Test]
     public function it_handles_proof_upload_for_existing_payment()
     {        // Create a real payment
         $payment = new Payment([
@@ -188,7 +189,9 @@ class ManualPaymentGatewayTest extends TestCase
         // Verify payment was updated in database
         $payment->refresh();
         $this->assertNotNull($payment->proof_file_path);
-    }/** @test */
+    }
+    
+    #[Test]
     public function it_fails_proof_upload_for_non_existent_payment()
     {
         $fakeFile = UploadedFile::fake()->image('payment-proof.jpg');        // Act
@@ -197,7 +200,7 @@ class ManualPaymentGatewayTest extends TestCase
         // Assert
         $this->assertFalse($result['success']);
         $this->assertEquals('Payment not found', $result['message']);
-    }    /** @test */
+    }    #[Test]
     public function it_approves_payment_successfully()
     {        // Create a real payment
         $payment = new Payment([
@@ -221,7 +224,7 @@ class ManualPaymentGatewayTest extends TestCase
         $payment->refresh();
         $this->assertEquals('paid', $payment->status);
         $this->assertNotNull($payment->paid_at);
-    }    /** @test */
+    }    #[Test]
     public function it_rejects_payment_with_reason()
     {        // Create a real payment
         $payment = new Payment([
@@ -246,7 +249,7 @@ class ManualPaymentGatewayTest extends TestCase
         $payment->refresh();
         $this->assertEquals('failed', $payment->status);
         $this->assertNotNull($payment->failed_at);
-    }    /** @test */
+    }    #[Test]
     public function it_validates_file_size_correctly()
     {
         $gateway = $this->getGateway();
@@ -263,7 +266,7 @@ class ManualPaymentGatewayTest extends TestCase
         // Test invalid file size (6MB - exceeds 5MB limit)
         $invalidFile = UploadedFile::fake()->image('large.jpg')->size(6144);
         $this->assertFalse($method->invokeArgs($gateway, [$invalidFile]));
-    }    /** @test */
+    }    #[Test]
     public function it_validates_file_extension_correctly()
     {
         $gateway = $this->getGateway();
@@ -286,7 +289,7 @@ class ManualPaymentGatewayTest extends TestCase
         // Test invalid extension - create a file with disallowed extension
         $invalidFile = UploadedFile::fake()->create('malware.exe', 100);
         $this->assertFalse($method->invokeArgs($gateway, [$invalidFile]));
-    }    /** @test */
+    }    #[Test]
     public function it_validates_uploaded_file_comprehensively()
     {
         $gateway = $this->getGateway();

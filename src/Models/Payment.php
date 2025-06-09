@@ -99,10 +99,13 @@ class Payment extends Model
     public const STATUS_PAID      = 'paid';
     public const STATUS_FAILED    = 'failed';
     public const STATUS_CANCELLED = 'cancelled';
-    public const STATUS_REFUNDED  = 'refunded';    /**
+    public const STATUS_REFUNDED  = 'refunded';
+
+    /**
      * Scope a query to only include pending payments.
      */
-    public function scopePending(Builder $query): void
+    #[Scope]
+    protected function pending(Builder $query): void
     {
         $query->where('status', self::STATUS_PENDING);
     }
@@ -110,17 +113,35 @@ class Payment extends Model
     /**
      * Scope a query to only include paid payments.
      */
-    public function scopePaid(Builder $query): void
+    #[Scope]
+    protected function paid(Builder $query): void
     {
         $query->where('status', self::STATUS_PAID);
+    }    /**
+     * Scope a query to only include failed payments.
+     */
+    #[Scope]
+    protected function failed(Builder $query): void
+    {
+        $query->where('status', self::STATUS_FAILED);
     }
 
     /**
-     * Scope a query to only include failed payments.
+     * Scope a query to only include cancelled payments.
      */
-    public function scopeFailed(Builder $query): void
+    #[Scope]
+    protected function cancelled(Builder $query): void
     {
-        $query->where('status', self::STATUS_FAILED);
+        $query->where('status', self::STATUS_CANCELLED);
+    }
+
+    /**
+     * Scope a query to only include refunded payments.
+     */
+    #[Scope]
+    protected function refunded(Builder $query): void
+    {
+        $query->where('status', self::STATUS_REFUNDED);
     }
 
     /**
@@ -201,7 +222,8 @@ class Payment extends Model
      * @param string $externalReferenceId External reference ID (e.g. order ID)
      * @param string|null $referenceType Reference type (e.g. 'order', 'subscription')
      * @return \Illuminate\Database\Eloquent\Builder
-     */    public static function findByExternalReference($externalReferenceId, $referenceType = null)
+     */    
+    public static function findByExternalReference($externalReferenceId, $referenceType = null)
     {
         $query = static::where('external_reference_id', $externalReferenceId);
         
@@ -209,11 +231,13 @@ class Payment extends Model
             $query->where('reference_type', $referenceType);
         }
         
-        return $query;
-    }    /**
+        return $query;    }
+
+    /**
      * Scope for filtering by external reference
      */
-    public function scopeByExternalReference(Builder $query, string $externalReferenceId, ?string $referenceType = null): void
+    #[Scope]
+    protected function byExternalReference(Builder $query, string $externalReferenceId, ?string $referenceType = null): void
     {
         $query->where('external_reference_id', $externalReferenceId);
         

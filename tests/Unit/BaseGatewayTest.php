@@ -9,6 +9,7 @@ use Ejoi8\PaymentGateway\Models\Payment;
 use Ejoi8\PaymentGateway\PaymentGatewayServiceProvider;
 use InvalidArgumentException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class BaseGatewayTest extends TestCase
 {
@@ -73,7 +74,7 @@ class BaseGatewayTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
+    #[Test]
     public function it_formats_amount_correctly()
     {
         // Use reflection to access protected method
@@ -88,7 +89,7 @@ class BaseGatewayTest extends TestCase
         $this->assertEquals(123.46, $method->invokeArgs($this->gateway, [123.456])); // Rounded
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields_successfully()
     {
         // Arrange
@@ -109,7 +110,7 @@ class BaseGatewayTest extends TestCase
         $method->invokeArgs($this->gateway, [$data, $required]);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_for_missing_required_fields()
     {
         // Arrange
@@ -130,7 +131,7 @@ class BaseGatewayTest extends TestCase
         $method->invokeArgs($this->gateway, [$data, $required]);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_for_empty_required_fields()
     {
         // Arrange
@@ -149,7 +150,7 @@ class BaseGatewayTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Field 'customer_email' is required for test_gateway gateway");
         $method->invokeArgs($this->gateway, [$data, $required]);
-    }    /** @test */
+    }    #[Test]
     public function it_generates_callback_url_correctly()
     {
         // Use reflection to access protected method
@@ -166,7 +167,7 @@ class BaseGatewayTest extends TestCase
         $this->assertStringStartsWith('https://example.com', $url);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_success_url_correctly()
     {
         // Use reflection to access protected method
@@ -182,7 +183,7 @@ class BaseGatewayTest extends TestCase
         $this->assertStringStartsWith('https://example.com', $url);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_failed_url_correctly()
     {
         // Use reflection to access protected method
@@ -198,7 +199,7 @@ class BaseGatewayTest extends TestCase
         $this->assertStringStartsWith('https://example.com', $url);
     }
     
-    /** @test */
+    #[Test]
     public function it_creates_payment_record_with_defaults()
     {
         // Arrange
@@ -225,7 +226,7 @@ class BaseGatewayTest extends TestCase
         $this->assertNotNull($result->reference_id);
     }    
     
-    /** @test */
+    #[Test]
     public function it_creates_payment_record_with_external_reference()
     {
         // Arrange
@@ -253,7 +254,7 @@ class BaseGatewayTest extends TestCase
         $this->assertNotNull($result->reference_id);
     }
 
-    /** @test */    public function it_logs_gateway_response_when_payment_exists()
+    #[Test]    public function it_logs_gateway_response_when_payment_exists()
     {
         // Arrange
         $response = ['transaction_id' => 'TXN123', 'status' => 'success'];
@@ -283,7 +284,7 @@ class BaseGatewayTest extends TestCase
         $this->assertEquals($response, $payment->gateway_response);
     }
 
-    /** @test */
+    #[Test]
     public function it_does_not_log_when_no_payment_exists()
     {
         // Arrange
@@ -303,7 +304,7 @@ class BaseGatewayTest extends TestCase
         $method->invokeArgs($this->gateway, [$response]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_default_verification_response()
     {
         // Act
@@ -313,7 +314,7 @@ class BaseGatewayTest extends TestCase
         $this->assertStringContainsString('test_gateway', $result['message']);
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_if_enabled_from_config()
     {
         // Mock config
@@ -334,7 +335,7 @@ class BaseGatewayTest extends TestCase
         $this->assertFalse($this->gateway->isEnabled());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_gateway_config()
     {
         // Arrange
