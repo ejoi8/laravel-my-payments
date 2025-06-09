@@ -86,13 +86,10 @@ class Payment extends Model
     public const STATUS_PAID      = 'paid';
     public const STATUS_FAILED    = 'failed';
     public const STATUS_CANCELLED = 'cancelled';
-    public const STATUS_REFUNDED  = 'refunded';
-
-    /**
+    public const STATUS_REFUNDED  = 'refunded';    /**
      * Scope a query to only include pending payments.
      */
-    #[Scope]
-    protected function pending(Builder $query): void
+    public function scopePending(Builder $query): void
     {
         $query->where('status', self::STATUS_PENDING);
     }
@@ -100,8 +97,7 @@ class Payment extends Model
     /**
      * Scope a query to only include paid payments.
      */
-    #[Scope]
-    protected function paid(Builder $query): void
+    public function scopePaid(Builder $query): void
     {
         $query->where('status', self::STATUS_PAID);
     }
@@ -109,8 +105,7 @@ class Payment extends Model
     /**
      * Scope a query to only include failed payments.
      */
-    #[Scope]
-    protected function failed(Builder $query): void
+    public function scopeFailed(Builder $query): void
     {
         $query->where('status', self::STATUS_FAILED);
     }
@@ -205,8 +200,7 @@ class Payment extends Model
     }    /**
      * Scope for filtering by external reference
      */
-    #[Scope]
-    protected function byExternalReference(Builder $query, string $externalReferenceId, ?string $referenceType = null): void
+    public function scopeByExternalReference(Builder $query, string $externalReferenceId, ?string $referenceType = null): void
     {
         $query->where('external_reference_id', $externalReferenceId);
         

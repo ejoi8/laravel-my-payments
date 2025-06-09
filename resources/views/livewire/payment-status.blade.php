@@ -72,15 +72,18 @@
                 </div>
                 @endif
 
-                <!-- Timestamps -->
-                <div class="bg-white p-3 rounded shadow-sm">
+                <!-- Timestamps -->                <div class="bg-white p-3 rounded shadow-sm">
                     <dt class="text-xs uppercase font-medium text-gray-500">Created</dt>
                     <dd class="mt-1 text-sm text-gray-900">
-                        {{ $payment->created_at->format('M j, Y \a\t g:i A') }}
+                        @if($payment && $payment->created_at)
+                            {{ $payment->created_at->format('M j, Y \a\t g:i A') }}
+                        @else
+                            <span class="text-gray-400">Not available</span>
+                        @endif
                     </dd>
                 </div>
 
-                @if($payment->paid_at)
+                @if($payment && $payment->paid_at)
                 <div class="bg-white p-3 rounded shadow-sm">
                     <dt class="text-xs uppercase font-medium text-gray-500">Paid</dt>
                     <dd class="mt-1 text-sm text-gray-900">
