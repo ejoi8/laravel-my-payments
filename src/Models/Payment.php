@@ -77,6 +77,19 @@ class Payment extends Model
     {
         parent::__construct($attributes);        
         $this->setTable($this->getTableName());
+    }    
+    
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        // Auto-generate reference_id if not provided
+        static::creating(function (Payment $payment) {
+            if (empty($payment->reference_id)) {
+                $payment->reference_id = $payment->generateReferenceId();
+            }
+        });
     }
 
     /**

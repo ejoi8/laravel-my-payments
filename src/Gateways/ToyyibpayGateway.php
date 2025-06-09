@@ -167,10 +167,9 @@ class ToyyibpayGateway extends BaseGateway
      * @return array Response with status
      */
     public function handleCallback(array $data): array
-    {
-        // Extract ToyyibPay callback parameters
+    {        // Extract ToyyibPay callback parameters
         $billCode = $data['billcode'] ?? null;
-        $status   = $data['status'] ?? null;    // ToyyibPay uses 'status' in callback
+        $status   = $data['status_id'] ?? $data['status'] ?? null;    // ToyyibPay uses 'status_id' in callbacks
         $refno    = $data['refno'] ?? null;
         $reason   = $data['reason'] ?? null;
         

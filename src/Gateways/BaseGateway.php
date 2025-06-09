@@ -11,11 +11,10 @@ use InvalidArgumentException;
  * Abstract class that provides common functionality for all payment gateways
  */
 abstract class BaseGateway implements PaymentGatewayInterface
-{
-    /**
+{    /**
      * Gateway configuration
      * 
-     * @var array
+     * @var array|null
      */
     protected $config;
     
@@ -31,37 +30,67 @@ abstract class BaseGateway implements PaymentGatewayInterface
      */
     public function __construct()
     {
-        $this->config = config("payment-gateway.gateways.{$this->getName()}");
-    }
-
-    /**
+        // Don't load config in constructor for better testability
+        // Config will be loaded lazily when first accessed
+    }    /**
      * Get gateway configuration
      * 
      * @return array Configuration array
      */
     public function getConfig(): array
     {
+        if ($this->config === null) {
+            $this->loadConfig();
+        }
+        
         return $this->config;
     }
 
     /**
+     * Load gateway configuration
+     * 
+     * @return void
+     */
+    protected function loadConfig(): void
+    {
+        if (function_exists('config')) {
+            $this->config = config("payment-gateway.gateways.{$this->getName()}") ?? [];
+        } else {
+            $this->config = [];
+        }
+    }
+
+    /**
+     * Set gateway configuration (useful for testing)
+     * 
+     * @param array $config Configuration array
+     * @return void
+     */
+    public function setConfig(array $config): void
+    {
+        $this->config = $config;
+    }    /**
      * Check if gateway is enabled
      * 
      * @return bool Whether gateway is enabled
      */
     public function isEnabled(): bool
     {
-        return $this->config['enabled'] ?? false;
-    }
-
-    /**
+        $config = $this->getConfig();
+        return $config['enabled'] ?? false;
+    }    /**
      * Generate callback URL for gateway
      * 
      * @return string Callback URL
      */
     protected function generateCallbackUrl(): string
     {
-        return route('payment-gateway.callback', ['gateway' => $this->getName()]);
+        try {
+            return route('payment-gateway.callback', ['gateway' => $this->getName()]);
+        } catch (\Exception|\TypeError $e) {
+            // Fallback for testing environments where routes might not be available
+            return config('app.url', 'http://localhost') . '/payment-gateway/callback/' . $this->getName();
+        }
     }
     
     /**
@@ -71,7 +100,12 @@ abstract class BaseGateway implements PaymentGatewayInterface
      */
     protected function generateSuccessUrl(): string
     {
-        return route(config('payment-gateway.success_route', 'payment-gateway.success'));
+        try {
+            return route(config('payment-gateway.success_route', 'payment-gateway.success'));
+        } catch (\Exception|\TypeError $e) {
+            // Fallback for testing environments where routes might not be available
+            return config('app.url', 'http://localhost') . '/payment-gateway/success';
+        }
     }
 
     /**
@@ -81,8 +115,13 @@ abstract class BaseGateway implements PaymentGatewayInterface
      */
     protected function generateFailedUrl(): string
     {
-        return route(config('payment-gateway.failed_route', 'payment-gateway.failed'));
-    }    /**
+        try {
+            return route(config('payment-gateway.failed_route', 'payment-gateway.failed'));
+        } catch (\Exception|\TypeError $e) {
+            // Fallback for testing environments where routes might not be available
+            return config('app.url', 'http://localhost') . '/payment-gateway/failed';
+        }
+    }/**
      * Format amount to standard decimal places
      * 
      * @param float $amount Amount to format

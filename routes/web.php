@@ -4,11 +4,19 @@ use Illuminate\Support\Facades\Route;
 use Ejoi8\PaymentGateway\Controllers\PaymentController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 
-$config = config('payment-gateway.routes');
+// Safe config loading - handle case where config might not be available yet (during testing)
+$config = null;
+if (function_exists('config')) {
+    $config = config('payment-gateway.routes');
+}
+
+// Use defaults if config is not available
+$prefix = $config['prefix'] ?? 'payment-gateway';
+$middleware = $config['middleware'] ?? ['web'];
 
 Route::group([
-    'prefix' => $config['prefix'],
-    'middleware' => $config['middleware'],
+    'prefix' => $prefix,
+    'middleware' => $middleware,
 ], function () {
 
     // Payment creation

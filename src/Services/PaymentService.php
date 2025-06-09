@@ -230,7 +230,7 @@ class PaymentService
             $query->where('reference_type', $referenceType);
         }
         
-        return $query->latest()->first();
+        return $query->latest('id')->first();
     }
     
     /**

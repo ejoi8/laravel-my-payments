@@ -123,10 +123,11 @@ class ManualPaymentGateway extends BaseGateway
      * @param mixed $file Uploaded file
      * @param Payment $payment Payment record
      * @return string File path
-     */
+     */    
     private function storeProofFile($file, $payment): string
     {
-        $path = $file->store($this->config['upload_path'], 'public');
+        $config = $this->getConfig();
+        $path = $file->store($config['upload_path'], 'public');
 
         $payment->update([
             'proof_file_path' => $path,
@@ -201,11 +202,10 @@ class ManualPaymentGateway extends BaseGateway
     {
         if (!$file) {
             return ['success' => false, 'message' => 'No file uploaded'];
-        }
-
-        // Check file size
+        }        // Check file size
         if (!$this->validateFileSize($file)) {
-            $maxSize = $this->config['max_file_size'];
+            $config = $this->getConfig();
+            $maxSize = $config['max_file_size'];
             return [
                 'success' => false,
                 'message' => "File size exceeds maximum allowed size of {$maxSize}KB"
@@ -214,7 +214,8 @@ class ManualPaymentGateway extends BaseGateway
 
         // Check file extension
         if (!$this->validateFileExtension($file)) {
-            $allowedExtensions = implode(', ', $this->config['allowed_extensions']);
+            $config = $this->getConfig();
+            $allowedExtensions = implode(', ', $config['allowed_extensions']);
             return [
                 'success' => false,
                 'message' => "File type not allowed. Allowed types: {$allowedExtensions}"
@@ -229,10 +230,11 @@ class ManualPaymentGateway extends BaseGateway
      * 
      * @param mixed $file Uploaded file
      * @return bool Whether file size is valid
-     */
+     */    
     private function validateFileSize($file): bool
     {
-        $maxSize = $this->config['max_file_size'] * 1024; // Convert KB to bytes
+        $config = $this->getConfig();
+        $maxSize = $config['max_file_size'] * 1024; // Convert KB to bytes
         return $file->getSize() <= $maxSize;
     }
 
@@ -241,11 +243,12 @@ class ManualPaymentGateway extends BaseGateway
      * 
      * @param mixed $file Uploaded file
      * @return bool Whether file extension is valid
-     */
+     */    
     private function validateFileExtension($file): bool
     {
         $extension = strtolower($file->getClientOriginalExtension());
-        $allowedExtensions = $this->config['allowed_extensions'];
+        $config = $this->getConfig();
+        $allowedExtensions = $config['allowed_extensions'];
 
         return in_array($extension, $allowedExtensions);
     }
